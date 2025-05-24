@@ -107,12 +107,12 @@ export default function ChatPage() {
 
       if (selectedFile) {
         // Convert PDF to base64
-        // pdfData = await fileToBase64(selectedFile)
+        pdfData = await fileToBase64(selectedFile)
         
         // Alternative: If you want raw binary data as array
-        const arrayBuffer = await fileToArrayBuffer(selectedFile)
-        const uint8Array = new Uint8Array(arrayBuffer)
-        pdfData = new TextDecoder().decode(uint8Array)
+        // const arrayBuffer = await fileToArrayBuffer(selectedFile)
+        // const uint8Array = new Uint8Array(arrayBuffer)
+        // pdfData = Array.from(uint8Array)
       }
 
       // Prepare the payload in your specified format
