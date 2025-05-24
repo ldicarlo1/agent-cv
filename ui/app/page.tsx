@@ -82,87 +82,71 @@ export default function ChatPage() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!selectedFile) return
-
+    e.preventDefault();
+  
+    if (!selectedFile) return;
+  
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
       content: input.trim() || "Uploaded PDF for analysis",
-      file: selectedFile
-        ? {
-            name: selectedFile.name,
-            size: selectedFile.size,
-          }
-        : undefined,
+      file: {
+        name: selectedFile.name,
+        size: selectedFile.size,
+      },
       timestamp: new Date(),
-    }
-
-    setMessages((prev) => [...prev, userMessage])
-    setIsLoading(true)
-
+    };
+  
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
+  
     try {
-      let pdfData: string | null = null
-
-      if (selectedFile) {
-        // Convert PDF to base64
-        // pdfData = await fileToBase64(selectedFile)
-        
-        // Alternative: If you want raw binary data as array
-        const arrayBuffer = await fileToArrayBuffer(selectedFile)
-        const uint8Array = new Uint8Array(arrayBuffer)
-        pdfData = new TextDecoder().decode(uint8Array)
+      // Prepare FormData for file upload
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      if (input.trim()) {
+        formData.append("message", input.trim());
       }
-
-      // Prepare the payload in your specified format
-      const payload = {
-        data: pdfData, // This will be the base64 string of the PDF
-        message: input.trim() || undefined, // Optional: include the message if provided
-        filename: selectedFile?.name || undefined, // Optional: include filename
-      }
-
+  
       const response = await fetch(WEBHOOK_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      })
-
+        body: formData, // No need to set Content-Type; browser sets it with correct boundary
+      });
+  
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`)
+        throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
       }
-
-      const responseText = await response.text()
-
+  
+      const responseText = await response.text();
+  
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
         content: responseText || "PDF uploaded successfully to webhook!",
         timestamp: new Date(),
-      }
-
-      setMessages((prev) => [...prev, assistantMessage])
+      };
+  
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error("Error sending message:", error)
+      console.error("Error sending message:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
-        content: "Sorry, there was an error processing your request. Please check your webhook endpoint and try again.",
+        content:
+          "Sorry, there was an error processing your request. Please check your webhook endpoint and try again.",
         timestamp: new Date(),
-      }
-      setMessages((prev) => [...prev, errorMessage])
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
-      setIsLoading(false)
-      setInput("")
-      setSelectedFile(null)
+      setIsLoading(false);
+      setInput("");
+      setSelectedFile(null);
       if (fileInputRef.current) {
-        fileInputRef.current.value = ""
+        fileInputRef.current.value = "";
       }
-      setTimeout(scrollToBottom, 100)
+      setTimeout(scrollToBottom, 100);
     }
-  }
+  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"
