@@ -1,6 +1,7 @@
 "use client"
 import { useEffect } from 'react';
 import '@n8n/chat/style.css';
+import './chat.css';
 import { createChat } from '@n8n/chat';
 
 export default function ChatPage() {
@@ -34,5 +35,10 @@ export default function ChatPage() {
     });
   }, []);
 
-  return <div></div>;
+  return (
+    <>
+      <div id="n8n-chat"></div>
+      {/* Global chat styles moved to chat.css */}
+    </>
+  );
 }
